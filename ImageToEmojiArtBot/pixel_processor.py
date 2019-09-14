@@ -5,13 +5,14 @@ images and converting them to emojis
 from typing import *
 
 color_dictionary = {
-    (255, 255, 0): 'angry', # Yellow
-    (255, 50, 50): 'rage', # Red
+#     R    G    B     Emoji
+    (255, 255,   0): 'angry', # Yellow
+    (255,  50,  50): 'rage', # Red
     (213, 118, 232): 'pound', # Purple
-    (156, 107, 47): 'poop', # Brown
-    (50, 255, 50): 'pear', # Green
-    (50, 50, 255): 'gem', # Blue
-    (50, 50, 50): 'ant', # Black
+    (156, 107,  47): 'poop', # Brown
+    (50,  255,  50): 'pear', # Green
+    (50,   50, 255): 'gem', # Blue
+    (50,   50,  50): 'ant', # Black
     (255, 255, 255): 'skull' # White
 }
 
