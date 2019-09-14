@@ -1,2 +1,4 @@
 dblpy
 discord
+numpy
+opencv-python

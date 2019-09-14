@@ -5,18 +5,36 @@ images and converting them to emojis
 from typing import *
 
 color_dictionary = {
-    (0, 0, 0): 'Sample Text'
+    (255, 255, 0): 'angry',
+    (255, 50, 50): 'rage',
+    (213, 118, 232): 'smiling_imp',
+    (156, 107, 47): 'poop',
+    (50, 255, 50): 'nauseated_face',
+    (50, 50, 255): 'large_blue_circle',
+    (0, 0, 0): 'bust_in_silhouette',
+    (255, 255, 255): 'skull'
 }
 
 def get_closest_key(red: int, green: int, blue: int) -> Tuple[int, int, int]:
+    """
+    Iterates over the keys in the dictionary, returns closest key
+    """
     smallest_distance = 10000 # Larger than max smallest distance
+    r = 0
+    g = 0
+    b = 0
     for k in color_dictionary.keys():
         diff_red   = abs(k[0] - red)
         diff_green = abs(k[1] - green)
         diff_blue  = abs(k[2] - blue)
-        if diff
+        summation = diff_red + diff_green + diff_blue
+        if summation < smallest_distance:
+            smallest_distance = summation
+            r = k[0]
+            g = k[1]
+            b = k[2]
 
-    return (red, green, blue)
+    return (r, g, b)
 
 def convert_pixel_to_emoji(red: int, green: int, blue: int ) -> str:
     """
@@ -24,8 +42,19 @@ def convert_pixel_to_emoji(red: int, green: int, blue: int ) -> str:
     returns the emoji closest to this color in the
     dictionary.
     """
-    return color_dictionary[get_closest_key(red, green, blue)]
+    return f':{color_dictionary[get_closest_key(red, green, blue)]}:'
 
+def convert_image_to_string(image):
+    to_return = ''
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            red: int   = image[i][j][0]
+            green: int = image[i][j][1]
+            blue: int  = image[i][j][2]
+            to_return += convert_pixel_to_emoji(red, green, blue)
+        to_return += '\n'
+
+    return to_return
 
 if __name__ == "__main__":
     print(convert_pixel_to_emoji(0, 0, 0))
