@@ -34,9 +34,31 @@ async def emojify(ctx: Context, image_url: str):
         await ctx.send('Image download failed')
     image = create_opencv_image_from_url(bytearray(req.content))
     string = convert_image_to_string(image).split('\n')
-    for i in string:
+    string_batch = break_into_parts(string, '\n', 2000)
+    for i in string_batch:
         if i != '':
             await ctx.send(f'{i}')
+
+def break_into_parts(string: str, split_character: str, max_message_len: int) -> List[str]:
+    """
+    Given an input string, split on the given split character and return
+    an array of batches such that each batch's string length is as close to
+    max_message_len as possible without exceeding it.
+    """
+    split_string = string.split(split_character)
+    batch_array = []
+    curr_batch_line = ''
+    curr_len = 0
+    for message_line in split_string:
+        if curr_len + len(message_line) <= max_message_len:
+            curr_batch_line += max_message_len + '\n'
+            curr_len += len(message_line)
+        else:
+            curr_len = 0
+            batch_array.append(curr_batch_line)
+            curr_batch_line = ''
+
+    return batch_array
 
 if __name__ == "__main__":
     with open('client_login_info.json') as f:
