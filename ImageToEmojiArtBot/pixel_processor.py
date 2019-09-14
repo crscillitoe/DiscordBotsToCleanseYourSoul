@@ -5,14 +5,14 @@ images and converting them to emojis
 from typing import *
 
 color_dictionary = {
-    (255, 255, 0): 'angry',
-    (255, 50, 50): 'rage',
-    (213, 118, 232): 'smiling_imp',
-    (156, 107, 47): 'poop',
-    (50, 255, 50): 'nauseated_face',
-    (50, 50, 255): 'large_blue_circle',
-    (0, 0, 0): 'bust_in_silhouette',
-    (255, 255, 255): 'skull'
+    (255, 255, 0): 'angry', # Yellow
+    (255, 50, 50): 'rage', # Red
+    (213, 118, 232): 'pound', # Purple
+    (156, 107, 47): 'poop', # Brown
+    (50, 255, 50): 'pear', # Green
+    (50, 50, 255): 'gem', # Blue
+    (50, 50, 50): 'ant', # Black
+    (255, 255, 255): 'skull' # White
 }
 
 def get_closest_key(red: int, green: int, blue: int) -> Tuple[int, int, int]:

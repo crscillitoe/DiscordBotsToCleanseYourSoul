@@ -34,9 +34,9 @@ async def emojify(ctx: Context, image_url: str):
         await ctx.send('Image download failed')
     image = create_opencv_image_from_url(bytearray(req.content))
     string = convert_image_to_string(image)
-    string_batch = break_into_parts(string, '\n', 2000)
+    string_batch = break_into_parts(string, '\n', 1000)
+    await ctx.send(f'Batched image into {len(string_batch)} batches: {[len(i) for i in string_batch]}')
     for i in string_batch:
-        print(len(i))
         if i != '':
             await ctx.send(f'{i}')
 
@@ -50,15 +50,20 @@ def break_into_parts(string: str, split_character: str, max_message_len: int) ->
     batch_array = []
     curr_batch_line = ''
     curr_len = 0
+    appended = False
     for message_line in split_string:
-        print(message_line)
         if curr_len + len(message_line) < max_message_len - 2:
+            appended = False
             curr_batch_line += message_line + '\n'
             curr_len += len(message_line) + 1
         else:
             batch_array.append(curr_batch_line)
+            appended = True
             curr_batch_line = message_line + '\n'
             curr_len = len(message_line) + 1
+
+    if not appended:
+        batch_array.append(curr_batch_line)
 
     return batch_array
 
