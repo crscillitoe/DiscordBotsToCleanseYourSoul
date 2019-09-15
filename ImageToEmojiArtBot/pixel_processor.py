@@ -3,18 +3,7 @@ Contains helper functions for processing
 images and converting them to emojis
 """
 from typing import *
-
-color_dictionary = {
-#     R    G    B     Emoji
-    (255, 255,   0): 'angry', # Yellow
-    (255,  50,  50): 'rage', # Red
-    (213, 118, 232): 'pound', # Purple
-    (156, 107,  47): 'poop', # Brown
-    (50,  255,  50): 'pear', # Green
-    (50,   50, 255): 'gem', # Blue
-    (50,   50,  50): 'ant', # Black
-    (255, 255, 255): 'skull' # White
-}
+from constants import color_dictionary
 
 def get_closest_key(red: int, green: int, blue: int) -> Tuple[int, int, int]:
     """
@@ -43,7 +32,7 @@ def convert_pixel_to_emoji(red: int, green: int, blue: int ) -> str:
     returns the emoji closest to this color in the
     dictionary.
     """
-    return f':{color_dictionary[get_closest_key(red, green, blue)]}:'
+    return f'{color_dictionary[get_closest_key(red, green, blue)]}'
 
 def convert_image_to_string(image):
     to_return = ''
@@ -53,7 +42,7 @@ def convert_image_to_string(image):
             green: int = image[i][j][1]
             blue: int  = image[i][j][2]
             to_return += convert_pixel_to_emoji(red, green, blue)
-        to_return += '\n'
+        to_return += '|'
 
     return to_return
 
