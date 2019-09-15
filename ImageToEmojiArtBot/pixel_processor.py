@@ -9,14 +9,14 @@ def get_closest_key(red: int, green: int, blue: int) -> Tuple[int, int, int]:
     """
     Iterates over the keys in the dictionary, returns closest key
     """
-    smallest_distance = 10000 # Larger than max smallest distance
+    smallest_distance = 1000000 # Larger than max smallest distance
     r = 0
     g = 0
     b = 0
     for k in color_dictionary.keys():
-        diff_red   = abs(k[0] - red)
-        diff_green = abs(k[1] - green)
-        diff_blue  = abs(k[2] - blue)
+        diff_red   = abs(k[0] - red) ** 2
+        diff_green = abs(k[1] - green) ** 2
+        diff_blue  = abs(k[2] - blue) ** 2
         summation = diff_red + diff_green + diff_blue
         if summation < smallest_distance:
             smallest_distance = summation
