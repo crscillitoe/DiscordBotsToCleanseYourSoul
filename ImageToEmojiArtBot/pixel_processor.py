@@ -20,9 +20,7 @@ def get_closest_key(red: int, green: int, blue: int) -> Tuple[int, int, int]:
         summation = diff_red + diff_green + diff_blue
         if summation < smallest_distance:
             smallest_distance = summation
-            r = k[0]
-            g = k[1]
-            b = k[2]
+            r, g, b = k
 
     return (r, g, b)
 
