@@ -3,7 +3,7 @@ Contains helper functions for processing
 images and converting them to emojis
 """
 from typing import *
-from constants import color_dictionary
+from constants_two import color_dictionary
 
 def get_closest_key(red: int, green: int, blue: int) -> Tuple[int, int, int]:
     """
