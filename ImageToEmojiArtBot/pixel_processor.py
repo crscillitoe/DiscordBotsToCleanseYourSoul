@@ -4,6 +4,10 @@ images and converting them to emojis
 """
 from typing import *
 from constants_two import color_dictionary
+# from KDTreeLib.kdtreelib import KDTree, KDValueMapping
+
+# value_mappings = [KDValueMapping(point, color_dictionary[point]) for point in color_dictionary.keys()]
+# tree = KDTree(num_dimensions=3, point_list=value_mappings)
 
 def get_closest_key(red: int, green: int, blue: int) -> Tuple[int, int, int]:
     """

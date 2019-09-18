@@ -1,0 +1,6 @@
+[submodule "ImageToEmojiArtBot/k-d-tree-search"]
+	path = ImageToEmojiArtBot/k-d-tree-search
+	url = https://github.com/crscillitoe/k-d-tree-search
+[submodule "ImageToEmojiArtBot/KDTreeLib"]
+	path = ImageToEmojiArtBot/KDTreeLib
+	url = https://github.com/crscillitoe/k-d-tree-search
