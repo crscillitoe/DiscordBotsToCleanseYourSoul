@@ -4,29 +4,10 @@ images and converting them to emojis
 """
 from typing import *
 from constants_two import color_dictionary
-# from KDTreeLib.kdtreelib import KDTree, KDValueMapping
+from KDTreeLib.kdtreelib import KDTree, KDValueMapping
 
-# value_mappings = [KDValueMapping(point, color_dictionary[point]) for point in color_dictionary.keys()]
-# tree = KDTree(num_dimensions=3, point_list=value_mappings)
-
-def get_closest_key(red: int, green: int, blue: int) -> Tuple[int, int, int]:
-    """
-    Iterates over the keys in the dictionary, returns closest key
-    """
-    smallest_distance = 1000000 # Larger than max smallest distance
-    r = 0
-    g = 0
-    b = 0
-    for k in color_dictionary.keys():
-        diff_red   = abs(k[0] - red) ** 2
-        diff_green = abs(k[1] - green) ** 2
-        diff_blue  = abs(k[2] - blue) ** 2
-        summation = diff_red + diff_green + diff_blue
-        if summation < smallest_distance:
-            smallest_distance = summation
-            r, g, b = k
-
-    return (r, g, b)
+value_mappings = [KDValueMapping(point, color_dictionary[point]) for point in color_dictionary.keys()]
+tree = KDTree(num_dimensions=3, point_list=value_mappings)
 
 def convert_pixel_to_emoji(red: int, green: int, blue: int ) -> str:
     """
@@ -34,7 +15,7 @@ def convert_pixel_to_emoji(red: int, green: int, blue: int ) -> str:
     returns the emoji closest to this color in the
     dictionary.
     """
-    return f'{color_dictionary[get_closest_key(red, green, blue)]}'
+    return f'{tree.get_nearest_neighbor((red, green, blue)).value}'
 
 def convert_image_to_string(image):
     to_return = ''
@@ -47,7 +28,3 @@ def convert_image_to_string(image):
         to_return += '|'
 
     return to_return
-
-if __name__ == "__main__":
-    print(convert_pixel_to_emoji(0, 0, 0))
-    print(convert_pixel_to_emoji(1, 2, 3))
