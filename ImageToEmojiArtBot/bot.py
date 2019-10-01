@@ -1,6 +1,7 @@
 import discord
 import json
 import requests
+from io import BytesIO
 from pixel_processor import convert_pixel_to_emoji
 from pixel_processor import convert_image_to_string
 from image_processor import create_opencv_image_from_url
@@ -44,6 +45,11 @@ async def emojify(ctx: Context, image_url: str, width: int = 25, height: int = 2
                 await ctx.send(f'{i}')
     except:
         await ctx.send('Image download failed')
+
+@client.command()
+async def copy_image(ctx: Context, image_url: str):
+    req: Response = requests.get(image_url)
+    await ctx.send(file=discord.File(BytesIO(req.content), 'emojified.png'))
 
 def break_into_parts(string: str, input_separator: str, max_message_len: int, output_separator: str = '\n') -> List[str]:
     """
