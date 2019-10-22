@@ -3,6 +3,7 @@ ADD bot.py /
 ADD pixel_processor.py /
 ADD image_processor.py /
 ADD constants_two.py /
+ADD svgs/ svgs/
 ADD secrets/client_login_info.json /
 
 ADD requirements.txt /

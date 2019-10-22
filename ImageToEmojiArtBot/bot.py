@@ -32,6 +32,14 @@ async def emojify(ctx: Context, image_url: str, width: int = 25, height: int = 2
             await ctx.send(f'{i}')
 
 @client.command()
+async def emojify_image(ctx: Context, image_url: str, width: int = 25, height: int = 25):
+    req: Response = requests.get(image_url)
+    if req.status_code != 200:
+        raise Exception
+    image = create_opencv_image_from_url(bytearray(req.content), width, height)
+
+
+@client.command()
 async def copy_image(ctx: Context, image_url: str):
     req: Response = requests.get(image_url)
     await ctx.send(file=discord.File(BytesIO(req.content), 'emojified.png'))
