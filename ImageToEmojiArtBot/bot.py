@@ -67,6 +67,6 @@ def break_into_parts(string: str, input_separator: str, max_message_len: int, ou
     return batch_array
 
 if __name__ == "__main__":
-    with open('secrets/client_login_info.json') as f:
+    with open('client_login_info.json') as f:
         json_data = json.load(f)
     client.run(json_data.get('clientSecret'))

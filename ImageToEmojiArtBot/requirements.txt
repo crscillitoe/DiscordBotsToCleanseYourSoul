@@ -1,3 +1,4 @@
+requests
 dblpy
 discord
 numpy
