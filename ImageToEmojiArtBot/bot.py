@@ -38,7 +38,6 @@ async def emojify(ctx: Context, image_url: str):
         row_image = None
         for emoji in row:
             if emoji not in loaded_images:
-                print(f'/svgs/{emoji}.svg.png')
                 image = cv2.imread(f"/svgs/{emoji}.svg.png", cv2.IMREAD_COLOR)
                 loaded_images[emoji] = cv2.resize(image, (emoji_width, emoji_height), interpolation=cv2.INTER_AREA)
 
@@ -46,11 +45,11 @@ async def emojify(ctx: Context, image_url: str):
             if row_image is None:
                 row_image = loaded_images[emoji]
             else:
-                row_image = np.vstack((row_image, loaded_images[emoji]))
+                row_image = np.hstack((row_image, loaded_images[emoji]))
         if complete_image is None:
             complete_image = row_image
         else:
-            complete_image = np.hstack((complete_image, row_image))
+            complete_image = np.vstack((complete_image, row_image))
 
     success, encoded_image = cv2.imencode('.png', complete_image)
     image_bytes = encoded_image.tobytes()
