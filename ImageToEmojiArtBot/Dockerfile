@@ -9,5 +9,7 @@ ADD secrets/client_login_info.json /
 ADD requirements.txt /
 
 RUN pip install -r requirements.txt
+RUN apt update
+RUN apt install -y vim
 
 ENTRYPOINT [ "python3", "bot.py" ]

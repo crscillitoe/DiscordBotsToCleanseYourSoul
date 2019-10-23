@@ -56,6 +56,21 @@ def convert_image_to_string(image):
 
     return to_return
 
+def convert_image_to_emoji_list(image):
+    to_return = []
+    for i in range(image.shape[0]):
+        row = []
+        for j in range(image.shape[1]):
+            red: int   = image[i][j][0]
+            green: int = image[i][j][1]
+            blue: int  = image[i][j][2]
+            emoji_name = color_dict[to_four_bit((red, green, blue))]
+            row.append(emoji_name.replace(':', ''))
+        to_return.append(row)
+
+    return to_return
+
+
 color_dict = {}
 for r in range(16):
     for g in range(16):

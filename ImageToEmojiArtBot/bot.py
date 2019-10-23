@@ -2,11 +2,13 @@ import discord
 import json
 import requests
 from io import BytesIO
-from pixel_processor import convert_image_to_string
+from pixel_processor import convert_image_to_string, convert_image_to_emoji_list
 from image_processor import create_opencv_image_from_url
 from discord.ext import commands
 from discord.ext.commands import Bot, Context
 from typing import *
+import numpy as np
+import cv2
 
 client = commands.Bot(
     description="Emoji Bot 9000",
@@ -19,25 +21,40 @@ async def build_dict(ctx: Context, emoji_str: str):
     await ctx.send('processed')
 
 @client.command()
-async def emojify(ctx: Context, image_url: str, width: int = 25, height: int = 25):
+async def emojify(ctx: Context, image_url: str):
+    width = 50
+    height = 50
+    emoji_width = 50
+    emoji_height = 50
     req: Response = requests.get(image_url)
     if req.status_code != 200:
         raise Exception
     image = create_opencv_image_from_url(bytearray(req.content), width, height)
-    string = convert_image_to_string(image)
-    string_batch = break_into_parts(string, '|', 1000)
-    await ctx.send(f'Batched image into {len(string_batch)} batches: {[len(i) for i in string_batch]}')
-    for i in string_batch:
-        if i != '':
-            await ctx.send(f'{i}')
+    emojis = convert_image_to_emoji_list(image)
 
-@client.command()
-async def emojify_image(ctx: Context, image_url: str, width: int = 25, height: int = 25):
-    req: Response = requests.get(image_url)
-    if req.status_code != 200:
-        raise Exception
-    image = create_opencv_image_from_url(bytearray(req.content), width, height)
+    loaded_images = {}
+    complete_image = None
+    for row in emojis:
+        row_image = None
+        for emoji in row:
+            if emoji not in loaded_images:
+                print(f'/svgs/{emoji}.svg.png')
+                image = cv2.imread(f"/svgs/{emoji}.svg.png", cv2.IMREAD_COLOR)
+                loaded_images[emoji] = cv2.resize(image, (emoji_width, emoji_height), interpolation=cv2.INTER_AREA)
 
+            # Now we know we're in the cache
+            if row_image is None:
+                row_image = loaded_images[emoji]
+            else:
+                row_image = np.vstack((row_image, loaded_images[emoji]))
+        if complete_image is None:
+            complete_image = row_image
+        else:
+            complete_image = np.hstack((complete_image, row_image))
+
+    success, encoded_image = cv2.imencode('.png', complete_image)
+    image_bytes = encoded_image.tobytes()
+    await ctx.send(file=discord.File(BytesIO(image_bytes), 'emojified.png'))
 
 @client.command()
 async def copy_image(ctx: Context, image_url: str):
