@@ -15,6 +15,12 @@ def to_four_bit(color_input: Tuple[int, int, int]) -> Tuple[int, int, int]:
     r = r * 16 // 255
     g = g * 16 // 255
     b = b * 16 // 255
+    if r == 16:
+        r -= 1
+    if g == 16:
+        g -= 1
+    if b == 16:
+        b -=1
     return (r, g, b)
 
 def to_eight_bit(color_input: Tuple[int, int, int]) -> Tuple[int, int, int]:
