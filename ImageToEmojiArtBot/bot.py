@@ -91,6 +91,41 @@ async def hd_emojify(ctx: Context, image_url: str):
     await ctx.send(file=discord.File(BytesIO(image_bytes), 'emojified.png'))
 
 @client.command()
+async def super_hd_emojify(ctx: Context, image_url: str):
+    width = 150
+    height = 150
+    emoji_width = 10
+    emoji_height = 10
+    req: Response = requests.get(image_url)
+    if req.status_code != 200:
+        raise Exception
+    image = create_opencv_image_from_url(bytearray(req.content), width, height)
+    emojis = convert_image_to_emoji_list(image)
+
+    loaded_images = {}
+    complete_image = None
+    for row in emojis:
+        row_image = None
+        for emoji in row:
+            if emoji not in loaded_images:
+                image = cv2.imread(f"/svgs/{emoji}.svg.png", cv2.IMREAD_COLOR)
+                loaded_images[emoji] = cv2.resize(image, (emoji_width, emoji_height), interpolation=cv2.INTER_AREA)
+
+            # Now we know we're in the cache
+            if row_image is None:
+                row_image = loaded_images[emoji]
+            else:
+                row_image = np.hstack((row_image, loaded_images[emoji]))
+        if complete_image is None:
+            complete_image = row_image
+        else:
+            complete_image = np.vstack((complete_image, row_image))
+
+    success, encoded_image = cv2.imencode('.png', complete_image)
+    image_bytes = encoded_image.tobytes()
+    await ctx.send(file=discord.File(BytesIO(image_bytes), 'emojified.png'))
+
+@client.command()
 async def copy_image(ctx: Context, image_url: str):
     req: Response = requests.get(image_url)
     await ctx.send(file=discord.File(BytesIO(req.content), 'emojified.png'))
