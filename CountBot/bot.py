@@ -43,6 +43,11 @@ async def on_ready():
                                 )"""
         )
 
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS CurrentCount
+                               (CountTrueValue INT NOT NULL)"""
+        )
+
     print("Logged in as " + client.user.name + " (ID:" + str(client.user.id) + ")")
     print("--------")
     print("Current Discord.py Version: {}".format(discord.__version__))
@@ -55,11 +60,56 @@ async def on_ready():
     )
 
 
+def get_count():
+    with sqlite3.connect("my_database.db") as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT CountTrueValue FROM CurrentCount LIMIT 1
+            """
+        )
+        rows = cur.fetchall()
+
+        if len(rows) == 0:
+            return 1
+        return int(rows[0][0])
+
+
 @client.event
 async def on_message(message):
     if message.channel.id == ranked_counting_channel_id:
         # THIS IS NOT A DRILL, WE ARE COUNTING
-        pass
+        current_count = get_count()
+        expected_count = compute_correct_fizzbuzz(current_count + 1)
+        with sqlite3.connect("my_database.db") as conn:
+            cur = conn.cursor()
+            if message.content == expected_count:
+                # success
+                cur.execute(
+                    """INSERT INTO Counts (UserID, SentMessage)
+                                        VALUES (?, ?)""",
+                    (
+                        message.author.id,
+                        message.content,
+                    ),
+                )
+                emoji = "✔️"
+                await message.add_reaction(emoji)
+            else:
+                # failure
+                cur.execute(
+                    """INSERT INTO Errors (UserID, SentMessage, ExpectedMessage)
+                                        VALUES (?, ?, ?)""",
+                    (
+                        message.author.id,
+                        message.content,
+                        expected_count,
+                    ),
+                )
+                emoji = "❌"
+                await message.add_reaction(emoji)
+
+        await set_count(message, current_count + 1)
 
     if message.author.id == 82969926125490176 and message.content == "!generate_db":
         await message.channel.send(
@@ -75,6 +125,14 @@ async def on_message(message):
             user_name = args[0]
         print(user_name)
         await message.channel.send(get_errors(user_name=user_name))
+    if message.content.startswith("!show_counts"):
+        args = extract_args(message.content)
+        user_name = ""
+        if len(args) >= 1:
+            user_name = args[0]
+        print(user_name)
+        await message.channel.send(get_counts(user_name=user_name))
+
     if message.content.startswith("!show_counters"):
         await message.channel.send(get_counters())
 
@@ -163,6 +221,39 @@ async def generate_db(ctx):
             )
         )
 
+    await set_count(ctx, current_count - 1, True)
+
+
+def get_counts(*, user_name=""):
+    with sqlite3.connect("my_database.db") as conn:
+        cur = conn.cursor()
+
+        if user_name == "":
+            cur.execute(
+                """SELECT Users.Name, Count.SentMessage, Count.Date
+                                            FROM Counts as Count
+                                            INNER JOIN Counters AS Users
+                                                ON Users.ID = Count.UserID
+                                            ORDER BY Count.Date DESC
+                                            LIMIT 10"""
+            )
+        else:
+            cur.execute(
+                """SELECT Users.Name, Count.SentMessage, Count.Date
+                                            FROM Counts as Count
+                                            INNER JOIN Counters AS Users
+                                                ON Users.ID = Count.UserID
+                                            WHERE Users.Name = ?
+                                            ORDER BY Count.Date DESC
+                                            LIMIT 10""",
+                (user_name,),
+            )
+
+        rows = cur.fetchall()
+        to_print = tabulate(rows, ["Counter", "Message", "Date"])
+
+        return f"```python\n{to_print}\n```"
+
 
 def get_errors(*, user_name=""):
     with sqlite3.connect("my_database.db") as conn:
@@ -190,6 +281,35 @@ def get_errors(*, user_name=""):
         to_print = tabulate(rows, ["Counter", "Expected Message", "Error Date"])
 
         return f"```python\n{to_print}\n```"
+
+
+async def set_count(ctx, n, log=False):
+    with sqlite3.connect("my_database.db") as conn:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT CountTrueValue FROM CurrentCount LIMIT 1
+            """
+        )
+        rows = cur.fetchall()
+        if len(rows) == 0:
+            cur.execute(
+                """
+                INSERT INTO CurrentCount (CountTrueValue) VALUES (?)
+                """,
+                (n,),
+            )
+        else:
+            cur.execute(
+                """
+                UPDATE CurrentCount SET CountTrueValue = ?
+                """,
+                (n,),
+            )
+
+        if log:
+            await ctx.channel.send("I have set the count to {}".format(n))
 
 
 def get_counters():
