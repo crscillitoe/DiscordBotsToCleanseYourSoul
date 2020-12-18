@@ -10,6 +10,10 @@ import math
 
 ranked_counting_channel_id = 771783255375478816
 
+good_emojis = ["🆒", "🧠", "🥳", "💯", "👌", "🤏", "🙏", "♿", "🎉", "😎", "💎"]
+
+bad_emojis = ["🆘", "🤡", "🤨", "😒", "🤢", "🤮", "👨‍🦽", "🐒", "⁉"]
+
 client = commands.Bot(description="Count Bot", command_prefix="!")
 print("running")
 
@@ -93,8 +97,15 @@ async def on_message(message):
                         message.content,
                     ),
                 )
-                emoji = "✔️"
-                await message.add_reaction(emoji)
+                await message.add_reaction("✅")
+
+                if message.content.startswith("fizz"):
+                    await message.add_reaction("🥂")
+                if message.content.endswith("buzz"):
+                    await message.add_reaction("🐝")
+
+                for i in range(5):
+                    await message.add_reaction(random.choice(good_emojis))
             else:
                 # failure
                 cur.execute(
@@ -106,8 +117,9 @@ async def on_message(message):
                         expected_count,
                     ),
                 )
-                emoji = "❌"
-                await message.add_reaction(emoji)
+                await message.add_reaction("❌")
+                for i in range(5):
+                    await message.add_reaction(random.choice(bad_emojis))
 
         await set_count(message, current_count + 1)
 
@@ -118,30 +130,11 @@ async def on_message(message):
             )
         )
         await generate_db(message)
-    if message.content.startswith("!show_errors"):
-        args = extract_args(message.content)
-        user_name = ""
-        if len(args) >= 1:
-            user_name = args[0]
-        print(user_name)
-        await message.channel.send(get_errors(user_name=user_name))
-    if message.content.startswith("!show_counts"):
-        args = extract_args(message.content)
-        user_name = ""
-        if len(args) >= 1:
-            user_name = args[0]
-        print(user_name)
-        await message.channel.send(get_counts(user_name=user_name))
-
-    if message.content.startswith("!show_counters"):
-        await message.channel.send(get_counters())
-
-
-def extract_args(message):
-    split = message.split(" ")
-    if len(split) > 1:
-        return split[1:]
-    return []
+    for role in message.author.roles:
+        if role.id == 771860536140759061:
+            taunt = random.randint(69, 73)
+            if taunt == 69:
+                await message.add_reaction("💩")
 
 
 async def generate_db(ctx):
@@ -224,65 +217,6 @@ async def generate_db(ctx):
     await set_count(ctx, current_count - 1, True)
 
 
-def get_counts(*, user_name=""):
-    with sqlite3.connect("my_database.db") as conn:
-        cur = conn.cursor()
-
-        if user_name == "":
-            cur.execute(
-                """SELECT Users.Name, Count.SentMessage, Count.Date
-                                            FROM Counts as Count
-                                            INNER JOIN Counters AS Users
-                                                ON Users.ID = Count.UserID
-                                            ORDER BY Count.Date DESC
-                                            LIMIT 10"""
-            )
-        else:
-            cur.execute(
-                """SELECT Users.Name, Count.SentMessage, Count.Date
-                                            FROM Counts as Count
-                                            INNER JOIN Counters AS Users
-                                                ON Users.ID = Count.UserID
-                                            WHERE Users.Name = ?
-                                            ORDER BY Count.Date DESC
-                                            LIMIT 10""",
-                (user_name,),
-            )
-
-        rows = cur.fetchall()
-        to_print = tabulate(rows, ["Counter", "Message", "Date"])
-
-        return f"```python\n{to_print}\n```"
-
-
-def get_errors(*, user_name=""):
-    with sqlite3.connect("my_database.db") as conn:
-        cur = conn.cursor()
-
-        if user_name == "":
-            cur.execute(
-                """SELECT Users.Name, Error.ExpectedMessage, Error.Date
-                                            FROM Errors as Error
-                                            INNER JOIN Counters AS Users
-                                                ON Users.ID = Error.UserID
-                                            LIMIT 10"""
-            )
-        else:
-            cur.execute(
-                """SELECT Users.Name, Error.ExpectedMessage, Error.Date
-                                            FROM Errors as Error
-                                            INNER JOIN Counters AS Users
-                                                ON Users.ID = Error.UserID
-                                            WHERE Users.Name = ? LIMIT 10""",
-                (user_name,),
-            )
-
-        rows = cur.fetchall()
-        to_print = tabulate(rows, ["Counter", "Expected Message", "Error Date"])
-
-        return f"```python\n{to_print}\n```"
-
-
 async def set_count(ctx, n, log=False):
     with sqlite3.connect("my_database.db") as conn:
         cur = conn.cursor()
@@ -310,46 +244,6 @@ async def set_count(ctx, n, log=False):
 
         if log:
             await ctx.channel.send("I have set the count to {}".format(n))
-
-
-def get_counters():
-    with sqlite3.connect("my_database.db") as conn:
-        cur = conn.cursor()
-
-        cur.execute(
-            """SELECT Users.Name,
-                     (SELECT COUNT(*) FROM Counts WHERE UserID = Users.ID) AS GoodCounts,
-                     (SELECT COUNT(*) FROM Errors WHERE UserID = Users.ID) AS BadCounts
-                    FROM Counters AS Users
-                    ORDER BY GoodCounts DESC
-            """
-        )
-
-        rows = cur.fetchall()
-        rated_scores = []
-        for counter in rows:
-            rating = compute_rating_score(counter[1], counter[2])
-            rated_scores.append((counter[0], rating, counter[1], counter[2]))
-
-        rated_scores.sort(key=lambda x: float(x[1]))
-        rated_scores.reverse()
-
-        to_print = tabulate(
-            rated_scores,
-            headers=["Counter", "ELO", "Good Counts", "Bad Counts"],
-            tablefmt="psql",
-            numalign="right",
-        )
-
-        return f"```python\n{to_print}\n```"
-
-
-def compute_rating_score(good_counts, bad_counts):
-    rating = (good_counts - (bad_counts * 20)) * 53.4283
-
-    if rating < 0:
-        rating = 0
-    return str(rating)
 
 
 def compute_correct_fizzbuzz(n):
